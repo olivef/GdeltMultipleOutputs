@@ -24,33 +24,19 @@ public class Gdelt {
         private Text countryCode = new Text();
         private double num_items;
         private Text date = new Text();
-        //private static Hashtable<String, Integer> myhash = new Hashtable<String, Integer>();
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String[] valor = value.toString().split("\t");
             countryCode.set(valor[44]);
             date.set(valor[1]);
-	    //Integer occurencies = myhash.get(countryCode.toString()+date.toString());
-            //if (occurencies == null) {
-            //	myhash.put(countryCode.toString()+date.toString(), 1);
-	    //} else {
-              //  myhash.put(countryCode.toString()+date.toString(), occurencies + 1);
-              //}
-              //
-		if(countryCode != null){
-            		context.write(countryCode, date);
-		}
+	    if(countryCode != null){
+		    context.write(countryCode, date);
+	    }
 	}
-	//	protected void cleanup(Context context) throws IOException, InterruptedException {
-	//		for (String key : myhash.keySet()) {
-	//			System.err.println("Key:"+key + myhash.get(key));
-	//			context.write(new Text(key), new IntWritable(myhash.get(key)));
-	//		} 
-	//	}  
     }
 
-    public static class CalculateSUMReducer extends Reducer<Text, Text, Text, Text> {
+    public static class CustomReducer extends Reducer<Text, Text, Text, Text> {
 	    private static Hashtable<String, Integer> myhash = new Hashtable<String, Integer>();
 	    MultipleOutputs<Text, Text> mos;
 	    @Override
@@ -69,7 +55,7 @@ public class Gdelt {
 					   }
 				   }
 				   for (String mkey : myhash.keySet()) {
-					   System.err.println("key"+key+"-----Key:------"+mkey +"---"+ myhash.get(mkey));
+					   //System.err.println("key"+key+"-----Key:------"+mkey +"---"+ myhash.get(mkey));
 					   if (key.toString().equals("IN") || key.toString().equals("US") ){
 						   mos.write(key.toString(),new Text(mkey),new Text(""+myhash.get(mkey)));
 					   }
@@ -101,8 +87,7 @@ public class Gdelt {
 
 	    job.setMapperClass(GdeltMapper.class);
 	    FileInputFormat.addInputPath(job, wikistats);
-	    //job.setCombinerClass(CalculateSUMReducer.class);
-	    job.setReducerClass(CalculateSUMReducer.class);
+	    job.setReducerClass(CustomReducer.class);
 
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(Text.class);
